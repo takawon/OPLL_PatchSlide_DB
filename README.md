@@ -57,8 +57,9 @@ MGS Tone Craft（MGSTC）のインストーラーで導入した場合も、同�
 アプリ側で配置先を指定できる場合は、そのフォルダーの3ファイルを参照してください。
 
 アプリ開発者向けの詳細な契約（識別・読み取り規則・互換性・導入／更新／削除の作法）は
-[SPEC.md](SPEC.md)、テーブル定義は [SCHEMA.md](SCHEMA.md) と `schemas/` を参照してください。
-Python の最小サンプルが `examples/python/` にあります。
+[SPEC.md](SPEC.md)、テーブル定義は [SCHEMA.md](SCHEMA.md) と `schemas/`、
+検索クエリベクトルの構築手順は [QUERY.md](QUERY.md) を参照してください。
+Python のサンプル（読み取り・検証・クエリベクトル構築）が `examples/python/` にあります。
 
 ## ライセンス
 

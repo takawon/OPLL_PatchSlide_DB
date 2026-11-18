@@ -36,9 +36,10 @@ Shared fixed location (primary):
 - Other systems: `/usr/local/share/OPLL_PatchSlide_DB`
 
 Any application may instead keep its own copy in a private directory.
-See [SPEC.md](SPEC.md) for the integration contract and [SCHEMA.md](SCHEMA.md)
-(plus `schemas/`) for the table definitions. A minimal Python example is in
-`examples/python/`.
+See [SPEC.md](SPEC.md) for the integration contract, [SCHEMA.md](SCHEMA.md)
+(plus `schemas/`) for the table definitions, and [QUERY.md](QUERY.md) for how
+to build search query vectors from fingerprints. Python examples (reading,
+verification, query-vector construction) are in `examples/python/`.
 
 ## License
 

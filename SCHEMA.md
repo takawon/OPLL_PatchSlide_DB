@@ -47,8 +47,10 @@
 検索ベクトル: 768次元、コーデック `f64le_v1`
 （little-endian binary64 × 768 = 6,144 bytes、`vector_blob`）。
 候補間の距離はベクトル同士の二乗ユークリッド距離で、小さいほど音響的に近い候補です。
-クエリベクトルは、対象候補のフィンガープリントから `search_methods.config_json` /
-`layout_json` に記録された凍結済み方法で算出します。方法の再現にはこれらの定義が正本です。
+クエリベクトルは、対象候補のフィンガープリントから凍結済み方法
+`B-frozen-acoustic-search-v1` で算出します。構築手順は [QUERY.md](QUERY.md)、
+参照実装は `examples/python/query_vector.py` です（保存ベクトル全件との
+再現一致を検証済み）。方法の正本は `search_methods.config_json` / `layout_json` です。
 
 タグは日本語の標準タグ94件で、`tags.ordinal` の順序が安定した表示順です。
 クラスタは `sampled_medoids_k16`（16群）と `sampled_medoids_k64`（64群）の2集合があり、
