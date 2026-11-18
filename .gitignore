@@ -1,0 +1,4 @@
+# Database files are distributed only as GitHub Release assets. Never commit them.
+*.sqlite
+*.zip
+SHA256SUMS.txt.tmp
