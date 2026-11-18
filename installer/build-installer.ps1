@@ -43,19 +43,22 @@ foreach ($name in @('Default.isl', 'Japanese.isl')) {
 
 # 3. Resolve and validate the pinned Inno Setup compiler.
 if (-not $IsccPath) {
+    $command = Get-Command ISCC.exe -ErrorAction SilentlyContinue
+    if ($command) { $IsccPath = $command.Source }
     $candidates = @(
         (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
-        (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')
+        (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe')
     )
-    $IsccPath = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+    foreach ($candidate in $candidates) {
+        if (-not $IsccPath -and (Test-Path -LiteralPath $candidate)) { $IsccPath = $candidate }
+    }
     if (-not $IsccPath) { throw 'ISCC.exe not found. Install Inno Setup 6.7.3 or pass -IsccPath.' }
 }
 $IsccPath = [IO.Path]::GetFullPath($IsccPath)
+# Official ISCC has no usable Windows FileVersion; pin the compiler bytes by
+# SHA-256 only (same policy as MGSTC's Get-MgstcCompiler).
 Assert-FileHash $IsccPath $definition.compilerSha256 'ISCC.exe'
-$compilerVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($IsccPath).FileVersion
-if ($compilerVersion -ne $definition.compilerVersion) {
-    throw "ISCC version '$compilerVersion' does not match pinned '$($definition.compilerVersion)'."
-}
 
 # 4. Stage the payload in the layout the .iss expects.
 $output = [IO.Path]::GetFullPath((Join-Path $repoRoot $OutputDirectory))
