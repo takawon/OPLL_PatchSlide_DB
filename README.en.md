@@ -1,7 +1,8 @@
 # OPLL PatchSlide DB
 
 A shared database of OPLL (YM2413) patch-slide candidates for applications.
-It provides 12,180 candidates measured from a real MGSC/MGSDRV chain, with candidate
+It provides 12,180 candidates built by analysing MGSC/MGSDRV register traces
+with emu2413, with candidate
 definitions, acoustic fingerprints, search vectors, tags and clusters, as SQLite files.
 
 Japanese documentation is primary: [README.md](README.md) / [SPEC.md](SPEC.md).
