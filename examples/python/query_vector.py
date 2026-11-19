@@ -22,7 +22,7 @@ Pipeline (per candidate, from its four fingerprints, note_index 1..4):
 
 Verified against the distributed set: rebuilding every stored vector from
 the fingerprints reproduces all 12,180 vectors with a worst-case absolute
-difference of 1.943e-16 (float64 rounding level). See QUERY.md.
+difference of 5.551e-17 (float64 rounding level). See QUERY.md.
 
 Usage:
     python query_vector.py --dir PATH --candidate slide_0_1_h1 [--top N]
@@ -33,6 +33,7 @@ import argparse
 import json
 import math
 import os
+import pathlib
 import sqlite3
 import struct
 import sys
@@ -95,7 +96,9 @@ def build_query_vector(fingerprints):
 
 
 def open_readonly(path: str) -> sqlite3.Connection:
-    uri = "file:" + path.replace("?", "%3f").replace("#", "%23") + "?mode=ro&immutable=1"
+    # as_uri() percent-encodes the path correctly (a hand-built "file:"
+    # string breaks on paths containing '%', '#', '?' and similar).
+    uri = pathlib.Path(os.path.abspath(path)).as_uri() + "?mode=ro&immutable=1"
     return sqlite3.connect(uri, uri=True)
 
 

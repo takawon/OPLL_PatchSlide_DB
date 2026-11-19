@@ -3,18 +3,28 @@
 
 SPDX-License-Identifier: MIT
 
-Verifies a database set (manifest + SHA-256), opens both SQLite files
-read-only, and shows basic queries: candidate lookup, tags, and nearest
-neighbours by squared Euclidean distance over the 768-dim f64le vectors.
+Verifies a database set (manifest + SHA-256 + version agreement), opens
+both SQLite files read-only, and shows basic queries: candidate lookup,
+tags, and nearest neighbours by squared Euclidean distance over the
+768-dim f64le vectors.
+
+Nearest-neighbour search has three modes (--mode): "auto" restricts the
+results to candidates judged safe for automatic use (the
+v_auto_safe_candidates view), "manual" restricts them to candidates
+allowed with human confirmation (v_manual_candidates), and "all" searches
+every candidate. Production similarity features should use "auto" (or
+"manual" where a person confirms each pick), not "all".
 
 Usage:
     python sample_reader.py [--dir PATH] [--candidate ID] [--top N]
+                            [--mode auto|manual|all]
 """
 
 import argparse
 import hashlib
 import json
 import os
+import pathlib
 import sqlite3
 import struct
 import sys
@@ -39,7 +49,9 @@ def sha256_of(path: str) -> str:
 
 
 def open_readonly(path: str) -> sqlite3.Connection:
-    uri = "file:" + path.replace("?", "%3f").replace("#", "%23") + "?mode=ro&immutable=1"
+    # as_uri() percent-encodes the path correctly (a hand-built "file:"
+    # string breaks on paths containing '%', '#', '?' and similar).
+    uri = pathlib.Path(os.path.abspath(path)).as_uri() + "?mode=ro&immutable=1"
     return sqlite3.connect(uri, uri=True)
 
 
@@ -63,6 +75,22 @@ def load_verified(directory: str):
     count = runtime.execute("SELECT COUNT(*) FROM candidates").fetchone()[0]
     if count != manifest["candidate_count"]:
         raise SystemExit("candidate_count mismatch")
+    # Version agreement: the manifest, the runtime DB and the search DB
+    # must all describe the same dataset (SPEC.md section 2).
+    if manifest.get("manifest_version") != "patchslide-search-manifest-v2":
+        raise SystemExit("unsupported manifest_version")
+    db_meta = dict(runtime.execute("SELECT key, value FROM db_meta"))
+    search_meta = dict(search.execute("SELECT key, value FROM search_meta"))
+    if db_meta.get("dataset_version") != manifest["dataset_version"]:
+        raise SystemExit("runtime dataset_version mismatch")
+    if search_meta.get("dataset_version") != manifest["dataset_version"]:
+        raise SystemExit("search dataset_version mismatch")
+    if db_meta.get("candidate_ids_sha256") != manifest["candidate_ids_sha256"]:
+        raise SystemExit("candidate set mismatch (candidate_ids_sha256)")
+    if int(db_meta.get("schema_version", -1)) != int(manifest["source_schema_version"]):
+        raise SystemExit("runtime schema_version mismatch")
+    if int(search_meta.get("schema_version", -1)) != int(manifest["schema_version"]):
+        raise SystemExit("search schema_version mismatch")
     return manifest, runtime, search
 
 
@@ -79,13 +107,24 @@ def vector_of(search: sqlite3.Connection, candidate_id: str):
     return struct.unpack(f"<{DIMENSION}d", blob)
 
 
-def nearest(search: sqlite3.Connection, candidate_id: str, top: int):
+def allowed_ids(runtime: sqlite3.Connection, mode: str):
+    if mode == "all":
+        return None
+    view = "v_auto_safe_candidates" if mode == "auto" else "v_manual_candidates"
+    return {row[0] for row in runtime.execute(f"SELECT candidate_id FROM {view}")}
+
+
+def nearest(runtime: sqlite3.Connection, search: sqlite3.Connection,
+            candidate_id: str, top: int, mode: str = "all"):
     query = vector_of(search, candidate_id)
+    allowed = allowed_ids(runtime, mode)
     results = []
     for other_id, blob in search.execute(
         "SELECT candidate_id, vector_blob FROM search_vectors"
     ):
         if other_id == candidate_id:
+            continue
+        if allowed is not None and other_id not in allowed:
             continue
         target = struct.unpack(f"<{DIMENSION}d", blob)
         distance = sum((a - b) ** 2 for a, b in zip(query, target))
@@ -99,6 +138,10 @@ def main() -> int:
     parser.add_argument("--dir", default=default_directory(), help="database directory")
     parser.add_argument("--candidate", default="slide_0_1_h1")
     parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--mode", choices=("auto", "manual", "all"),
+                        default="all",
+                        help="restrict nearest-neighbour results by the "
+                             "candidates' use judgement (default: all)")
     args = parser.parse_args()
 
     manifest, runtime, search = load_verified(args.dir)
@@ -115,8 +158,9 @@ def main() -> int:
         (args.candidate,),
     )]
     print("tags:", ", ".join(tags))
-    print(f"nearest {args.top} to {args.candidate}:")
-    for distance, other_id in nearest(search, args.candidate, args.top):
+    print(f"nearest {args.top} to {args.candidate} (mode: {args.mode}):")
+    for distance, other_id in nearest(runtime, search, args.candidate,
+                                      args.top, args.mode):
         print(f"  {other_id}  squared_distance={distance:.6f}")
     return 0
 

@@ -46,6 +46,12 @@ verification, query-vector construction) are in `examples/python/`.
 - Database files and documentation: **CC BY 4.0** (see [LICENSE](LICENSE)).
   Attribution is required; indicate if you changed the material.
 - Sample code under `examples/`: **MIT** (see [LICENSE-CODE](LICENSE-CODE)).
+- Installer scripts under `installer/`: **AGPL-3.0-only** (see
+  [installer/README.md](installer/README.md)).
+
+Note: extracting fingerprints from arbitrary WAV files is out of scope for
+this repository. The examples cover building query vectors from the
+fingerprints stored in the database and searching with them.
 
 Attribution example:
 

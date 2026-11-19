@@ -3,6 +3,10 @@
 検索に使う768次元ベクトルを、フィンガープリントから再現するための手順です。
 方法は凍結済みの `B-frozen-acoustic-search-v1` で、正本はDB内にあります。
 
+提供範囲について：本書と参照実装が扱うのは、DBに収録済みのフィンガープリント
+からクエリベクトルを構築する処理です。任意の WAV ファイルからフィンガー
+プリントを抽出する処理は生成側のもので、本リポジトリでは提供していません。
+
 - フィンガープリントの形式: `patchslide.sqlite` の `fingerprint_layouts.layout_json`
 - 変換の定数と構成: `patchslide_search.sqlite` の `search_methods.config_json` /
   `search_methods.layout_json`

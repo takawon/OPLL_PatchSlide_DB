@@ -60,6 +60,9 @@ MGS Tone Craft（MGSTC）のインストーラーで導入した場合も、同�
 [SPEC.md](SPEC.md)、テーブル定義は [SCHEMA.md](SCHEMA.md) と `schemas/`、
 検索クエリベクトルの構築手順は [QUERY.md](QUERY.md) を参照してください。
 Python のサンプル（読み取り・検証・クエリベクトル構築）が `examples/python/` にあります。
+なお、任意の WAV ファイルからフィンガープリントを抽出する処理は本リポジトリの
+提供範囲外です。サンプルが扱うのは、DB に収録済みのフィンガープリントから
+クエリベクトルを構築し、検索する範囲までです。
 
 ## ライセンス
 
@@ -67,6 +70,8 @@ Python のサンプル（読み取り・検証・クエリベクトル構築）�
   （全文は [LICENSE](LICENSE)）。利用・改変・再配布（商用含む）ができます。
   出典表示を行い、改変した場合はその旨を示してください。
 - `examples/` のサンプルコード: **MIT**（[LICENSE-CODE](LICENSE-CODE)）。
+- `installer/` のインストーラー一式（スクリプト類）: **AGPL-3.0-only**
+  （詳細は [installer/README.md](installer/README.md)）。
 
 出典表示の例:
 
