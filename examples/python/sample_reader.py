@@ -12,8 +12,8 @@ Nearest-neighbour search has three modes (--mode): "auto" restricts the
 results to candidates judged safe for automatic use (the
 v_auto_safe_candidates view), "manual" restricts them to candidates
 allowed with human confirmation (v_manual_candidates), and "all" searches
-every candidate. Production similarity features should use "auto" (or
-"manual" where a person confirms each pick), not "all".
+every candidate. The default is "auto"; searching every candidate takes
+an explicit "--mode all".
 
 Usage:
     python sample_reader.py [--dir PATH] [--candidate ID] [--top N]
@@ -76,7 +76,7 @@ def load_verified(directory: str):
     if count != manifest["candidate_count"]:
         raise SystemExit("candidate_count mismatch")
     # Version agreement: the manifest, the runtime DB and the search DB
-    # must all describe the same dataset (SPEC.md section 2).
+    # must all describe the same dataset (SPEC.md section 1).
     if manifest.get("manifest_version") != "patchslide-search-manifest-v2":
         raise SystemExit("unsupported manifest_version")
     db_meta = dict(runtime.execute("SELECT key, value FROM db_meta"))
@@ -139,9 +139,9 @@ def main() -> int:
     parser.add_argument("--candidate", default="slide_0_1_h1")
     parser.add_argument("--top", type=int, default=5)
     parser.add_argument("--mode", choices=("auto", "manual", "all"),
-                        default="all",
+                        default="auto",
                         help="restrict nearest-neighbour results by the "
-                             "candidates' use judgement (default: all)")
+                             "candidates' use judgement (default: auto)")
     args = parser.parse_args()
 
     manifest, runtime, search = load_verified(args.dir)

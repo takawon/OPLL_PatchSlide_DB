@@ -24,6 +24,10 @@ Verified against the distributed set: rebuilding every stored vector from
 the fingerprints reproduces all 12,180 vectors with a worst-case absolute
 difference of 5.551e-17 (float64 rounding level). See QUERY.md.
 
+Note: the neighbour search in this reference implementation scans all
+candidates. Production code should restrict results by the candidates'
+use judgement (see the --mode option in sample_reader.py).
+
 Usage:
     python query_vector.py --dir PATH --candidate slide_0_1_h1 [--top N]
     python query_vector.py --dir PATH --verify-all
